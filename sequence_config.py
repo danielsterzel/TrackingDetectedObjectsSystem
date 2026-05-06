@@ -2,13 +2,7 @@ import configparser
 from dataclasses import dataclass
 from pathlib import Path
 
-DATASET_ROOT = Path("./evs_mot_public_dataset")
-TRAIN_PATH = DATASET_ROOT / "evs_mot-train"
-TEST_PATH  = DATASET_ROOT / "evs_mot-test"
-
-SEQUENCE_CONFIG_FILE = "seqinfo.ini"
-
-
+from constants import SEQUENCE_CONFIG_FILE, TEST_PATH, TRAIN_PATH
 
 @dataclass
 class SequenceConfig:
@@ -19,9 +13,10 @@ class SequenceConfig:
     seqLength: int
     imWidth: int
     imHeight: int
-    imExt : str
+    imExt: str
 
-def load_sequence_config(sequence_path : Path) -> SequenceConfig:
+
+def load_sequence_config(sequence_path: Path) -> SequenceConfig:
 
     config = configparser.ConfigParser()
 
@@ -36,10 +31,11 @@ def load_sequence_config(sequence_path : Path) -> SequenceConfig:
         seqLength=int(sequence["seqLength"]),
         imWidth=int(sequence["imWidth"]),
         imHeight=int(sequence["imHeight"]),
-        imExt=sequence["imExt"]
+        imExt=sequence["imExt"],
     )
 
-def load_sequences(dataset_path : Path) -> dict[str, SequenceConfig]:
+
+def load_sequences(dataset_path: Path) -> dict[str, SequenceConfig]:
 
     sequences = {}
     for sequence_path in dataset_path.iterdir():
@@ -54,8 +50,8 @@ def load_sequences(dataset_path : Path) -> dict[str, SequenceConfig]:
 
     return sequences
 
-# name : config
 
+# name : config
 TRAIN_SEQUENCES = load_sequences(TRAIN_PATH)
 TEST_SEQUENCES = load_sequences(TEST_PATH)
 

@@ -10,7 +10,10 @@ columns = ["frame", "id", "x", "y", "w", "h", "confidence"]
 
 # name: Dataframe
 
-def load_detections(sequence_dict : dict[str, SequenceConfig]) -> dict[str, pd.DataFrame]:
+
+def load_detections(
+    sequence_dict: dict[str, SequenceConfig],
+) -> dict[str, pd.DataFrame]:
 
     dataframes = {}
     for name, config in sequence_dict.items():
@@ -25,6 +28,7 @@ def load_detections(sequence_dict : dict[str, SequenceConfig]) -> dict[str, pd.D
         dataframes[config.name] = det_df
 
     return dataframes
+
 
 train_detections = load_detections(TRAIN_SEQUENCES)
 test_detections = load_detections(TEST_SEQUENCES)
