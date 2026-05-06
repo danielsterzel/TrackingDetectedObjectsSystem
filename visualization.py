@@ -42,37 +42,55 @@ def sample_and_show_images(data: tuple, num_samples=10):
 
 
 #
-def view_detections(images, df: pd.DataFrame, num_samples=10):
+def view_detections(images, df: pd.DataFrame):
 
-    for idx, (frame, img) in enumerate(images):
+    grouped = df.groupby("frame")
 
-        if idx > num_samples:
+    for frame, img in images:
+
+        if frame in grouped.groups:
+
+            sub_df = grouped.get_group(frame)
+
+            for detection in sub_df.itertuples():
+
+                x1 = int(detection.x)
+                y1 = int(detection.y)
+                w = int(detection.w)
+                h = int(detection.h)
+
+                cv2.rectangle(
+                    img,
+                    (x1, y1),
+                    (x1 + w, y1 + h),
+                    (0, 255, 0),
+                    2
+                )
+
+        cv2.imshow("detections", img)
+
+        key = cv2.waitKey(30)
+
+        if key == 27:
             break
 
-        sub_df = df[df["frame"] == frame]
-
-        for _, detection in sub_df.iterrows():
-
-            x1, y1, w, h = (
-                int(detection["x"]),
-                int(detection["y"]),
-                int(detection["w"]),
-                int(detection["h"]),
-            )
-            x2 = x1 + w
-            y2 = y1 + h
-
-            cv2.rectangle(img,
-                          (x1, y1),
-                          (x2, y2),
-                          (0, 255, 0),
-                          2)
-            cv2.imshow(str(frame), img)
-            cv2.waitKey(0)
+    cv2.destroyAllWindows()
 
 images = fetch_images(TRAIN_PATH / "MOT_02" / "img1")
 df = train_detections["MOT_02"]
 
 view_detections(images, df)
+
+def play_images(images):
+    for frame, img in images:
+
+        cv2.imshow("sequence", img)
+
+        key = cv2.waitKey(30)
+
+        if key == 27:
+            break
+
+    cv2.destroyAllWindows()
 
 cv2.destroyAllWindows()

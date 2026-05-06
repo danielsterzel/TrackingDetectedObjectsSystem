@@ -41,8 +41,6 @@ def load_sequences(dataset_path: Path) -> dict[str, SequenceConfig]:
     for sequence_path in dataset_path.iterdir():
         if not sequence_path.is_dir():
             continue
-        print(sequence_path)
-
         sequence_config = sequence_path
         config = load_sequence_config(sequence_path)
 
@@ -55,4 +53,6 @@ def load_sequences(dataset_path: Path) -> dict[str, SequenceConfig]:
 TRAIN_SEQUENCES = load_sequences(TRAIN_PATH)
 TEST_SEQUENCES = load_sequences(TEST_PATH)
 
-print(TEST_SEQUENCES)
+
+if __name__ == "__main__":
+    print(TEST_SEQUENCES)
