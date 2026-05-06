@@ -5,4 +5,3 @@ TRAIN_PATH = DATASET_ROOT / "evs_mot-train"
 TEST_PATH = DATASET_ROOT / "evs_mot-test"
 
 SEQUENCE_CONFIG_FILE = "seqinfo.ini"
-

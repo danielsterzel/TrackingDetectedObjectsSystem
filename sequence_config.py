@@ -4,6 +4,7 @@ from pathlib import Path
 
 from constants import SEQUENCE_CONFIG_FILE, TEST_PATH, TRAIN_PATH
 
+
 @dataclass
 class SequenceConfig:
     folder_path: Path

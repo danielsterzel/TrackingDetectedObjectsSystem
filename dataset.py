@@ -8,6 +8,7 @@ DETECTIONS_SUFFIX = "det/det.txt"
 
 columns = ["frame", "id", "x", "y", "w", "h", "confidence"]
 
+
 # name: Dataframe
 def load_detections(
     sequence_dict: dict[str, SequenceConfig],

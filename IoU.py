@@ -1,4 +1,3 @@
-
 def calculate_iou(boxA, boxB):
 
     ax, ay, aw, ah = boxA

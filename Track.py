@@ -20,24 +20,13 @@ class TrackedObject:
     time_since_update: int = 0
 
     def __post_init__(self):
-        self.kf = KalmanFilter(
-            dim_x=4,
-            dim_z=2
-        )
+        self.kf = KalmanFilter(dim_x=4, dim_z=2)
 
         dt = 1
 
-        self.kf.F = np.array([
-            [1, 0, dt, 0],
-            [0, 1, 0, dt],
-            [0, 0, 1, 0],
-            [0, 0, 0, 1]
-        ])
+        self.kf.F = np.array([[1, 0, dt, 0], [0, 1, 0, dt], [0, 0, 1, 0], [0, 0, 0, 1]])
 
-        self.kf.H = np.array([
-            [1, 0, 0, 0],
-            [0, 1, 0, 0]
-        ])
+        self.kf.H = np.array([[1, 0, 0, 0], [0, 1, 0, 0]])
 
         self.kf.R *= 10
 
@@ -45,12 +34,7 @@ class TrackedObject:
 
         self.kf.Q *= 0.01
 
-        self.kf.x = np.array([
-            [self.x],
-            [self.y],
-            [0],
-            [0]
-        ])
+        self.kf.x = np.array([[self.x], [self.y], [0], [0]])
 
     def predict(self):
         self.kf.predict()
@@ -59,14 +43,9 @@ class TrackedObject:
         self.y = float(self.kf.x[1, 0])
 
     def update(self, x, y):
-        measurement = np.array([
-            [x],
-            [y]
-        ])
+        measurement = np.array([[x], [y]])
 
-        self.kf.update(
-            measurement
-        )
+        self.kf.update(measurement)
 
         self.x = float(self.kf.x[0, 0])
         self.y = float(self.kf.x[1, 0])
@@ -96,32 +75,20 @@ class Tracker:
         self.next_track_id += 1
 
         self.tracks.append(track)
-        print(
-            f"NEW TRACK CREATED "
-            f"id={self.next_track_id}"
-        )
+        print(f"NEW TRACK CREATED " f"id={self.next_track_id}")
 
     def update_track(self, track: TrackedObject, detection: pd.DataFrame):
-        track.update(
-            detection.x,
-            detection.y
-        )
+        track.update(detection.x, detection.y)
         track.w = detection.w
         track.h = detection.h
 
         track.frames_age += 1
         track.time_since_update = 0
-        print(
-            f"UPDATED Track {track.track_id}"
-        )
+        print(f"UPDATED Track {track.track_id}")
 
     def update(self, detections):
 
-
-
-        detections_list = list(
-            detections.itertuples()
-        )
+        detections_list = list(detections.itertuples())
         print("\n" + "=" * 50)
 
         print(
@@ -142,36 +109,18 @@ class Tracker:
 
             return
 
-        cost_matrix = np.zeros(
-            (
-                len(self.tracks),
-                len(detections_list)
-            )
-        )
+        cost_matrix = np.zeros((len(self.tracks), len(detections_list)))
 
         for track_idx, track in enumerate(self.tracks):
 
             for detection_idx, detection in enumerate(detections_list):
-                detection_bbox = (
-                    detection.x,
-                    detection.y,
-                    detection.w,
-                    detection.h
-                )
+                detection_bbox = (detection.x, detection.y, detection.w, detection.h)
 
-                iou = calculate_iou(
-                    track.bbox,
-                    detection_bbox
-                )
+                iou = calculate_iou(track.bbox, detection_bbox)
 
-                cost_matrix[
-                    track_idx,
-                    detection_idx
-                ] = 1 - iou
+                cost_matrix[track_idx, detection_idx] = 1 - iou
 
-        track_indices, detection_indices = linear_sum_assignment(
-            cost_matrix
-        )
+        track_indices, detection_indices = linear_sum_assignment(cost_matrix)
 
         print("\nHungarian matches:")
 
@@ -179,16 +128,9 @@ class Tracker:
 
         matched_detections = set()
 
-        for track_idx, detection_idx in zip(
-                track_indices,
-                detection_indices
-        ):
+        for track_idx, detection_idx in zip(track_indices, detection_indices):
 
-
-            iou = 1 - cost_matrix[
-                track_idx,
-                detection_idx
-            ]
+            iou = 1 - cost_matrix[track_idx, detection_idx]
 
             if iou < self.iou_threshold:
                 continue
@@ -197,10 +139,7 @@ class Tracker:
 
             detection = detections_list[detection_idx]
 
-            self.update_track(
-                track,
-                detection
-            )
+            self.update_track(track, detection)
 
             matched_tracks.add(track_idx)
 
@@ -217,10 +156,5 @@ class Tracker:
                 self.create_track(detection)
 
         self.tracks = [
-
-            track
-
-            for track in self.tracks
-
-            if track.time_since_update < self.max_age
+            track for track in self.tracks if track.time_since_update < self.max_age
         ]
