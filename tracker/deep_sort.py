@@ -19,6 +19,7 @@ import numpy as np
 from .kalman_filter import KalmanFilter
 from .track import Track, TrackState, Detection
 from .reid import ReIDExtractor
+from .camera_motion import CameraMotionCompensator
 from .matching import (
     matching_cascade,
     iou_cost,
@@ -45,6 +46,7 @@ class DeepSORT:
         max_iou_dist: float = 0.7,
         min_confidence: float = 0.3,
         reid_device: str | None = None,
+        use_cmc: bool = True,
     ):
         self.max_age = max_age
         self.n_init = n_init
@@ -54,6 +56,7 @@ class DeepSORT:
 
         self.kf = KalmanFilter()
         self.reid = ReIDExtractor(device=reid_device)
+        self.cmc = CameraMotionCompensator() if use_cmc else None
 
         self.tracks: list[Track] = []
         self._next_id = 1
@@ -82,6 +85,10 @@ class DeepSORT:
         for track in self.tracks:
             track.predict(self.kf)
 
+        # --- step 1b: camera motion compensation ---
+        if self.cmc is not None:
+            self.cmc.compensate(frame_image, self.tracks)
+
         # --- step 2: build Detection objects with ReID embeddings ---
         detections = self._build_detections(frame_image, raw_detections)
 
@@ -97,6 +104,8 @@ class DeepSORT:
         """Reset tracker state between sequences."""
         self.tracks = []
         self._next_id = 1
+        if self.cmc is not None:
+            self.cmc.reset()
 
     # ------------------------------------------------------------------
     # Internal helpers
