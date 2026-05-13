@@ -84,11 +84,11 @@ def main():
         help="Directory for result .txt files",
     )
     # Tracker hyper-parameters
-    parser.add_argument("--max-age",         type=int,   default=30)
-    parser.add_argument("--n-init",          type=int,   default=3)
+    parser.add_argument("--max-age",         type=int,   default=50)
+    parser.add_argument("--n-init",          type=int,   default=1)
     parser.add_argument("--max-cosine-dist", type=float, default=0.4)
     parser.add_argument("--max-iou-dist",    type=float, default=0.7)
-    parser.add_argument("--min-confidence",  type=float, default=0.3)
+    parser.add_argument("--min-confidence",  type=float, default=0.1)
     args = parser.parse_args()
 
     tracker_kwargs = dict(

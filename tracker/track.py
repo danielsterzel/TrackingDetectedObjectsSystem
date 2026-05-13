@@ -5,6 +5,8 @@ Track and Detection data classes.
 from enum import Enum, auto
 import numpy as np
 
+_EMA_ALPHA = 0.9  # smoothing factor for appearance feature EMA
+
 
 class TrackState(Enum):
     Tentative = auto()   # newly created, not yet confirmed
@@ -59,10 +61,12 @@ class Track:
 
         self.state = TrackState.Tentative
 
-        # Gallery: stores last N appearance embeddings for this track
+        # Gallery: stores recent appearance embeddings for this track
         self.features: list[np.ndarray] = []
+        self.smooth_feat: np.ndarray | None = None
         if feature is not None:
             self.features.append(feature)
+            self.smooth_feat = feature.copy()
 
         self._n_init = n_init
         self._max_age = max_age
@@ -97,10 +101,20 @@ class Track:
             self.mean, self.covariance, detection.to_xyah()
         )
 
-        # Keep a capped gallery of appearance embeddings
-        self.features.append(detection.feature)
-        if len(self.features) > 100:
-            self.features = self.features[-100:]
+        feat = detection.feature
+
+        # EMA smooth feature — stable representation across appearance changes
+        if self.smooth_feat is None:
+            self.smooth_feat = feat.copy()
+        else:
+            updated = _EMA_ALPHA * self.smooth_feat + (1 - _EMA_ALPHA) * feat
+            norm = np.linalg.norm(updated)
+            self.smooth_feat = updated / (norm + 1e-6)
+
+        # Keep a capped gallery of recent raw embeddings
+        self.features.append(feat)
+        if len(self.features) > 50:
+            self.features = self.features[-50:]
 
         self.hits += 1
         self.time_since_update = 0

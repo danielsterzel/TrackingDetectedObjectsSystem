@@ -40,11 +40,11 @@ class DeepSORT:
 
     def __init__(
         self,
-        max_age: int = 30,
-        n_init: int = 3,
+        max_age: int = 50,
+        n_init: int = 1,
         max_cosine_dist: float = 0.4,
         max_iou_dist: float = 0.7,
-        min_confidence: float = 0.3,
+        min_confidence: float = 0.1,
         reid_device: str | None = None,
         use_cmc: bool = True,
     ):

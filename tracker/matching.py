@@ -69,17 +69,25 @@ def cosine_distance(a: np.ndarray, b: np.ndarray) -> np.ndarray:
 
 def nn_cosine_cost(tracks, detections, track_indices, det_indices):
     """
-    Nearest-neighbour cosine cost: for each track, take the *minimum*
-    cosine distance across its entire feature gallery.
-    This is more robust than using only the latest embedding.
+    Nearest-neighbour cosine cost combining:
+    - EMA smooth feature (stable running average of appearance)
+    - Gallery min (best match over recent raw embeddings)
+    Taking the minimum of both gives robustness to both short-term
+    appearance noise and longer-term drift.
     """
     det_features = np.array([detections[j].feature for j in det_indices])
     cost = np.zeros((len(track_indices), len(det_indices)))
 
     for row, ti in enumerate(track_indices):
-        gallery = np.array(tracks[ti].features)         # (K, D)
-        dists = cosine_distance(gallery, det_features)  # (K, M)
-        cost[row] = dists.min(axis=0)
+        track = tracks[ti]
+        gallery = np.array(track.features)              # (K, D)
+        gallery_dists = cosine_distance(gallery, det_features).min(axis=0)
+
+        if track.smooth_feat is not None:
+            smooth_dists = cosine_distance(track.smooth_feat[None], det_features)[0]
+            cost[row] = np.minimum(gallery_dists, smooth_dists)
+        else:
+            cost[row] = gallery_dists
 
     return cost
 
